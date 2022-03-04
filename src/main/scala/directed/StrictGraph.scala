@@ -22,19 +22,53 @@ trait StrictGraph[V] {
       * @param v vertex
       * @return [[None]] if `v` is not an actual vertex, the inner degree of `v` otherwise
       */
-    def inDegreeOf(v : V) : Option[Int] = ???
+        def countNumber(v : V,set: Set[Arc[V]],Type:Int):Int={
+            if(set.isEmpty)
+                0
+            else {
+                if(Type==1){
+                val n=countNumber(v,set.tail,Type)
+                if (set.head._1==v)
+                    n + 1
+                 else
+                 n}
+                else {
+                    val n=countNumber(v,set.tail,Type)
+                    if (set.head._2==v)
+                        n+1
+                    else
+                        n
+                }
+            }
+
+        }
+    def inDegreeOf(v : V) : Option[Int] = {
+        if(vertices.contains(v))
+      Some(countNumber(v,arcs,2))
+      else
+            None
+    }
 
     /** The number of outcoming arcs to input vertex
       * @param v vertex
       * @return [[None]] if `v` is not an actual vertex, the outer degree of `v` otherwise
       */
-    def outDegreeOf(v : V) : Option[Int] = ???
-
+    def outDegreeOf(v : V) : Option[Int] = {
+        if(vertices.contains(v))
+        Some(countNumber(v,arcs,1))
+        else
+            None
+    }
     /** The number of adjacent vertices to input vertex
       * @param v vertex
       * @return [[None]] if `v` is not an actual vertex, the degree of `v` otherwise
       */
-    def degreeOf(v : V) : Option[Int] = ???
+    def degreeOf(v : V) : Option[Int] = {
+        if(vertices.contains(v))
+            Some(countNumber(v,arcs,1)+countNumber(v,arcs,2))
+        else
+            None
+    }
 
     /* VERTEX OPERATIONS */
 
