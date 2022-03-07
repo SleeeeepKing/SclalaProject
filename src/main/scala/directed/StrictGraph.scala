@@ -1,6 +1,6 @@
 package directed
 
-import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 /** Trait for a directed ''and strict'' graph, i.e. without loop nor parallel arcs */
 trait StrictGraph[V] {
@@ -42,6 +42,29 @@ trait StrictGraph[V] {
             }
 
         }
+    def DFS(v: V,ves: ListBuffer[V]):(List[V],ListBuffer[V])={
+      if(ves.isEmpty)
+        (List(v).tail,ves)
+        else{
+     if(ves.contains(v))
+       (List(v)++aideDFS(arcs.toList.reverse,v,ves),ves-=v)
+       else
+       (List(v).tail,ves)
+    }}
+    def aideDFS(ars:List[Arc[V]],v:V,ves: ListBuffer[V]): List[V] ={
+      if(ars.isEmpty){
+        List(v).tail
+      }else
+        {
+      if(ars.head._1==v) {
+        val res=DFS(ars.head._2,ves-=v)
+        res._1++aideDFS(ars.tail,v,ves-=v)
+      } else
+        {
+        aideDFS(ars.tail,v,ves)
+        }
+    }}
+
     def inDegreeOf(v : V) : Option[Int] = {
         if(vertices.contains(v))
       Some(countNumber(v,arcs,2))
