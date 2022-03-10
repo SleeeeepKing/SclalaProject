@@ -42,6 +42,37 @@ trait StrictGraph[V] {
             }
 
         }
+    def deleteArc(arc:Set[Arc[V]],v:V): Set[Arc[V]]={
+
+      if(arc.isEmpty)
+        arc
+        else {
+        if (arc.head._1 == v)
+          deleteArc(arc.tail, v)
+        else
+          Set(arc.head)++deleteArc(arc.tail, v)
+      }
+    }
+    def topologicalOrder(s:Set[V],arc:Set[Arc[V]]):List[V]={
+      if(s.nonEmpty) {
+        val ind=aide_top(s,arc)
+        val res=deleteArc(arc,ind)
+        val result=topologicalOrder(s-ind,res)
+        return List(ind)++result
+      }
+      s.toList
+    }
+    def aide_top(s:Set[V],arc:Set[Arc[V]]):V={
+      if(arc.nonEmpty){
+      if(inDegreeOf(s.head,s,arc).toList.head==0 ||s.tail.isEmpty) {
+
+        s.head
+      } else
+        aide_top(s.tail,arc)}
+      else{
+
+      s.head}
+    }
     def DFS(v: V,ves: ListBuffer[V]):(List[V],ListBuffer[V])={
       if(ves.isEmpty)
         (List(v).tail,ves)
@@ -58,16 +89,16 @@ trait StrictGraph[V] {
         {
       if(ars.head._1==v) {
         val res=DFS(ars.head._2,ves-=v)
-        res._1++aideDFS(ars.tail,v,ves-=v)
+       aideDFS(ars.tail,v,ves-=v)++res._1
       } else
         {
         aideDFS(ars.tail,v,ves)
         }
     }}
 
-    def inDegreeOf(v : V) : Option[Int] = {
-        if(vertices.contains(v))
-      Some(countNumber(v,arcs,2))
+    def inDegreeOf(v : V,s:Set[V],arc:Set[Arc[V]]) : Option[Int] = {
+        if(s.contains(v))
+      Some(countNumber(v,arc,2))
       else
             None
     }
