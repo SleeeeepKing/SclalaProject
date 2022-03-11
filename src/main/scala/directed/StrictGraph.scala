@@ -53,48 +53,49 @@ trait StrictGraph[V] {
           Set(arc.head)++deleteArc(arc.tail, v)
       }
     }
-    def topologicalOrder(s:Set[V],arc:Set[Arc[V]]):List[V]={
+    def topological(s:Set[V],arc:Set[Arc[V]]):List[V]={
       if(s.nonEmpty) {
         val ind=aide_top(s,arc)
         val res=deleteArc(arc,ind)
-        val result=topologicalOrder(s-ind,res)
+        val result=topological(s-ind,res)
         return List(ind)++result
       }
       s.toList
     }
-    def aide_top(s:Set[V],arc:Set[Arc[V]]):V={
-      if(arc.nonEmpty){
-      if(inDegreeOf(s.head,s,arc).toList.head==0 ||s.tail.isEmpty) {
+    def aide_top(s:Set[V],arc:Set[Arc[V]]):V= {
+      if (arc.nonEmpty) {
+        if (inDegreeOf(s.head, s, arc).toList.head == 0 || s.tail.isEmpty) {
+
+          s.head
+        } else
+          aide_top(s.tail, arc)
+      }
+      else {
 
         s.head
-      } else
-        aide_top(s.tail,arc)}
-      else{
 
-      s.head}
     }
-    def DFS(v: V,ves: ListBuffer[V]):(List[V],ListBuffer[V])={
+    }
+    def Hascycle(ves:Set[V]):Boolean={
       if(ves.isEmpty)
-        (List(v).tail,ves)
-        else{
-     if(ves.contains(v))
-       (List(v)++aideDFS(arcs.toList.reverse,v,ves),ves-=v)
-       else
-       (List(v).tail,ves)
-    }}
-    def aideDFS(ars:List[Arc[V]],v:V,ves: ListBuffer[V]): List[V] ={
-      if(ars.isEmpty){
-        List(v).tail
-      }else
-        {
-      if(ars.head._1==v) {
-        val res=DFS(ars.head._2,ves-=v)
-       aideDFS(ars.tail,v,ves-=v)++res._1
-      } else
-        {
-        aideDFS(ars.tail,v,ves)
-        }
-    }}
+        false
+        else
+        checkcycle(ves.head,ves.head)||Hascycle(ves.tail)
+    }
+  def checkcycle(parent:V,v:V):Boolean={
+
+      if(arcs.exists(y=>y._1==v)){
+        val s=arcs.filter(y=>y._1==v)
+        val u=s.map(x=>(parent==x._2) ||checkcycle(parent,x._2))
+        if(u.exists(w=>w==true))
+          true
+        else
+          false
+      }
+      else
+      false
+  }
+
 
     def inDegreeOf(v : V,s:Set[V],arc:Set[Arc[V]]) : Option[Int] = {
         if(s.contains(v))
@@ -169,7 +170,12 @@ trait StrictGraph[V] {
     /* SEARCH METHODS */
 
     /** A topological order of the vertex set (if exists) */
-    lazy val topologicalOrder : Option[Seq[V]] = ???
+    lazy val topologicalOrder : Option[Seq[V]] = {
+      if(Hascycle(vertices))
+        None
+      else
+        Some(topological(vertices,arcs).to(Seq))
+    }
 
     /* VALUATED GRAPH METHODS */
 
