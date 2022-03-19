@@ -34,4 +34,7 @@ case class StrictGraphDefaultImpl[V](vertices : Set[V], arcs : Set[Arc[V]]) exte
     /** @inheritdoc */
     def withAllArcs: StrictGraphDefaultImpl[V] =
       StrictGraphDefaultImpl(vertices, for (v1 <- vertices ; v2 <- vertices) yield Arc(v1, v2))
-  }
+
+  /** The set of all vertices of the graph */
+  override val VtoPos: Map[V, Int] = vertices.zipWithIndex.toMap
+}

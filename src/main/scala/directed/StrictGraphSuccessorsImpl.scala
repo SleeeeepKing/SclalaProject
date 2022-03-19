@@ -33,5 +33,8 @@ case class StrictGraphSuccessorsImpl[V](successors : Map[V, Set[V]]) extends Str
 
     /** @inheritdoc */
     def withAllArcs : StrictGraphSuccessorsImpl[V] = ???
-  }
+
+    /** The set of all vertices of the graph */
+    override val VtoPos: Map[V, Int] = vertices.zipWithIndex.toMap
+}
 

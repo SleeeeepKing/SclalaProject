@@ -1,13 +1,18 @@
 package directed
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.reflect.{ClassManifest, ClassTag}
+import scala.runtime.Nothing$
 
 /** Trait for a directed ''and strict'' graph, i.e. without loop nor parallel arcs */
 trait StrictGraph[V] {
     /* QUERY METHODS */
 
     /** The set of all vertices of the graph */
+    val VtoPos:Map[V,Int]
     val vertices : Set[V]
+    val map = mutable.Map.empty[Arc[V], Double]
 
     /** The set of all     arcs of the graph */
     val arcs : Set[Arc[V]]
@@ -124,7 +129,14 @@ trait StrictGraph[V] {
         else
             None
     }
+    def getMap(arc:Set[Arc[V]],weight:List[Double]):Map[Arc[V],Double]={
+      if(arc.nonEmpty){
+      map(arc.head)=weight.head
+        (map++getMap(arc.tail,weight.tail)).toMap}
+      else
+        Map.empty[Arc[V],Double]
 
+    }
     /* VERTEX OPERATIONS */
 
     /** Add vertex to graph
@@ -185,7 +197,54 @@ trait StrictGraph[V] {
       * @param end   destination of path
       * @return [[None]] if there is no path from `start` to `end`, the shortest path and its valuation otherwise
       */
-    def shortestPath(valuation : Map[Arc[V], Double])(start : V, end : V) : Option[(Seq[V], Double)] = ???
+    def shortestPath(valuation : Map[Arc[V], Double])(start : V, end : V) : Option[(Seq[V], Double)] ={
+      val edgeTo = mutable.ArrayBuffer.fill(vertices.size)(-1)
+      val disTo=mutable.ArrayBuffer.fill(vertices.size)(Double.PositiveInfinity)
+
+      disTo(VtoPos(start))=0.0
+      edgeTo(VtoPos(start))=(-1)
+      val sourceDist=(start,disTo(VtoPos(start)))
+      val sortByWeight:Ordering[(V,Double)]=(a,b)=>a._2.compareTo(b._2)
+      val queue=mutable.PriorityQueue[(V,Double)](sourceDist)(sortByWeight)
+      val res=aideQueue(queue, valuation, edgeTo,disTo) match {
+        case Some(x)=>(x._2,x._3)
+        case None=>(disTo,edgeTo)
+      }
+
+      if(res._1(VtoPos(end))!=Double.PositiveInfinity) {
+
+        val path=getPath(res._2,end).reverse
+        Some((path,res._1(VtoPos(end))))
+      } else
+        None
+    }
+  def getPath(gPath:mutable.ArrayBuffer[Int],end:V):Seq[V]={
+
+    if(gPath(VtoPos(end))>=0){
+    val next=vertices.toList(gPath(VtoPos(end)))
+
+      Seq(end)++getPath(gPath,next)}
+    else
+      Seq(end)
+  }
+  def aideQueue(queue: mutable.PriorityQueue[(V,Double)],valuation:Map[Arc[V], Double],edgeTo:mutable.ArrayBuffer[Int],disTo:mutable.ArrayBuffer[Double]):Option[(mutable.PriorityQueue[(V,Double)],mutable.ArrayBuffer[Double],mutable.ArrayBuffer[Int])]={
+     if(queue.nonEmpty){
+      val (minDestV, _) = queue.dequeue()
+      val s=arcs.filter(y=>y._1==minDestV)
+      s.foreach{e=>
+        if(disTo(VtoPos(e._2))>disTo(VtoPos(e._1))+valuation(e)) {
+          disTo(VtoPos(e._2))=disTo(VtoPos(e._1))+valuation(e)
+          edgeTo(VtoPos(e._2))=VtoPos(e._1)
+          if (!queue.exists(_._1 == e._2)) queue.enqueue((e._2, disTo(VtoPos(e._2))))
+        }
+        }
+       aideQueue(queue, valuation, edgeTo,disTo)
+      }
+    else
+       None
+  }
+
+
 
     /* toString-LIKE METHODS */
 
