@@ -33,5 +33,8 @@ case class StrictGraphMatrixImpl[V](vs : Seq[V], adjacency : IndexedSeq[IndexedS
 
     /** @inheritdoc */
     def withAllArcs : StrictGraphMatrixImpl[V] = ???
+
+    /** The set of all vertices of the graph */
+    override val VtoPos: Map[V, Int] = vertices.zipWithIndex.toMap
 }
 

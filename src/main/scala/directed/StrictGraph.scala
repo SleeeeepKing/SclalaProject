@@ -1,13 +1,18 @@
 package directed
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.reflect.{ClassManifest, ClassTag}
+import scala.runtime.Nothing$
 
 /** Trait for a directed ''and strict'' graph, i.e. without loop nor parallel arcs */
 trait StrictGraph[V] {
     /* QUERY METHODS */
 
     /** The set of all vertices of the graph */
+    val VtoPos:Map[V,Int]
     val vertices : Set[V]
+    val map = mutable.Map.empty[Arc[V], Double]
 
     /** The set of all     arcs of the graph */
     val arcs : Set[Arc[V]]
@@ -53,48 +58,49 @@ trait StrictGraph[V] {
           Set(arc.head)++deleteArc(arc.tail, v)
       }
     }
-    def topologicalOrder(s:Set[V],arc:Set[Arc[V]]):List[V]={
+    def topological(s:Set[V],arc:Set[Arc[V]]):List[V]={
       if(s.nonEmpty) {
         val ind=aide_top(s,arc)
         val res=deleteArc(arc,ind)
-        val result=topologicalOrder(s-ind,res)
+        val result=topological(s-ind,res)
         return List(ind)++result
       }
       s.toList
     }
-    def aide_top(s:Set[V],arc:Set[Arc[V]]):V={
-      if(arc.nonEmpty){
-      if(inDegreeOf(s.head,s,arc).toList.head==0 ||s.tail.isEmpty) {
+    def aide_top(s:Set[V],arc:Set[Arc[V]]):V= {
+      if (arc.nonEmpty) {
+        if (inDegreeOf(s.head, s, arc).toList.head == 0 || s.tail.isEmpty) {
+
+          s.head
+        } else
+          aide_top(s.tail, arc)
+      }
+      else {
 
         s.head
-      } else
-        aide_top(s.tail,arc)}
-      else{
 
-      s.head}
     }
-    def DFS(v: V,ves: ListBuffer[V]):(List[V],ListBuffer[V])={
+    }
+    def Hascycle(ves:Set[V]):Boolean={
       if(ves.isEmpty)
-        (List(v).tail,ves)
-        else{
-     if(ves.contains(v))
-       (List(v)++aideDFS(arcs.toList.reverse,v,ves),ves-=v)
-       else
-       (List(v).tail,ves)
-    }}
-    def aideDFS(ars:List[Arc[V]],v:V,ves: ListBuffer[V]): List[V] ={
-      if(ars.isEmpty){
-        List(v).tail
-      }else
-        {
-      if(ars.head._1==v) {
-        val res=DFS(ars.head._2,ves-=v)
-       aideDFS(ars.tail,v,ves-=v)++res._1
-      } else
-        {
-        aideDFS(ars.tail,v,ves)
-        }
-    }}
+        false
+        else
+        checkcycle(ves.head,ves.head)||Hascycle(ves.tail)
+    }
+  def checkcycle(parent:V,v:V):Boolean={
+
+      if(arcs.exists(y=>y._1==v)){
+        val s=arcs.filter(y=>y._1==v)
+        val u=s.map(x=>(parent==x._2) ||checkcycle(parent,x._2))
+        if(u.exists(w=>w==true))
+          true
+        else
+          false
+      }
+      else
+      false
+  }
+
 
     def inDegreeOf(v : V,s:Set[V],arc:Set[Arc[V]]) : Option[Int] = {
         if(s.contains(v))
@@ -123,7 +129,14 @@ trait StrictGraph[V] {
         else
             None
     }
+    def getMap(arc:Set[Arc[V]],weight:List[Double]):Map[Arc[V],Double]={
+      if(arc.nonEmpty){
+      map(arc.head)=weight.head
+        (map++getMap(arc.tail,weight.tail)).toMap}
+      else
+        Map.empty[Arc[V],Double]
 
+    }
     /* VERTEX OPERATIONS */
 
     /** Add vertex to graph
@@ -169,7 +182,12 @@ trait StrictGraph[V] {
     /* SEARCH METHODS */
 
     /** A topological order of the vertex set (if exists) */
-    lazy val topologicalOrder : Option[Seq[V]] = ???
+    lazy val topologicalOrder : Option[Seq[V]] = {
+      if(Hascycle(vertices))
+        None
+      else
+        Some(topological(vertices,arcs).to(Seq))
+    }
 
     /* VALUATED GRAPH METHODS */
 
@@ -179,7 +197,54 @@ trait StrictGraph[V] {
       * @param end   destination of path
       * @return [[None]] if there is no path from `start` to `end`, the shortest path and its valuation otherwise
       */
-    def shortestPath(valuation : Map[Arc[V], Double])(start : V, end : V) : Option[(Seq[V], Double)] = ???
+    def shortestPath(valuation : Map[Arc[V], Double])(start : V, end : V) : Option[(Seq[V], Double)] ={
+      val edgeTo = mutable.ArrayBuffer.fill(vertices.size)(-1)
+      val disTo=mutable.ArrayBuffer.fill(vertices.size)(Double.PositiveInfinity)
+
+      disTo(VtoPos(start))=0.0
+      edgeTo(VtoPos(start))=(-1)
+      val sourceDist=(start,disTo(VtoPos(start)))
+      val sortByWeight:Ordering[(V,Double)]=(a,b)=>a._2.compareTo(b._2)
+      val queue=mutable.PriorityQueue[(V,Double)](sourceDist)(sortByWeight)
+      val res=aideQueue(queue, valuation, edgeTo,disTo) match {
+        case Some(x)=>(x._2,x._3)
+        case None=>(disTo,edgeTo)
+      }
+
+      if(res._1(VtoPos(end))!=Double.PositiveInfinity) {
+
+        val path=getPath(res._2,end).reverse
+        Some((path,res._1(VtoPos(end))))
+      } else
+        None
+    }
+  def getPath(gPath:mutable.ArrayBuffer[Int],end:V):Seq[V]={
+
+    if(gPath(VtoPos(end))>=0){
+    val next=vertices.toList(gPath(VtoPos(end)))
+
+      Seq(end)++getPath(gPath,next)}
+    else
+      Seq(end)
+  }
+  def aideQueue(queue: mutable.PriorityQueue[(V,Double)],valuation:Map[Arc[V], Double],edgeTo:mutable.ArrayBuffer[Int],disTo:mutable.ArrayBuffer[Double]):Option[(mutable.PriorityQueue[(V,Double)],mutable.ArrayBuffer[Double],mutable.ArrayBuffer[Int])]={
+     if(queue.nonEmpty){
+      val (minDestV, _) = queue.dequeue()
+      val s=arcs.filter(y=>y._1==minDestV)
+      s.foreach{e=>
+        if(disTo(VtoPos(e._2))>disTo(VtoPos(e._1))+valuation(e)) {
+          disTo(VtoPos(e._2))=disTo(VtoPos(e._1))+valuation(e)
+          edgeTo(VtoPos(e._2))=VtoPos(e._1)
+          if (!queue.exists(_._1 == e._2)) queue.enqueue((e._2, disTo(VtoPos(e._2))))
+        }
+        }
+       aideQueue(queue, valuation, edgeTo,disTo)
+      }
+    else
+       None
+  }
+
+
 
     /* toString-LIKE METHODS */
 
