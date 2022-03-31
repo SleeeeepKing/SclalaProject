@@ -58,14 +58,13 @@ trait StrictGraph[V] {
           Set(arc.head)++deleteArc(arc.tail, v)
       }
     }
-    def topological(s:Set[V],arc:Set[Arc[V]]):List[V]={
+    def topological(s:Set[V],arc:Set[Arc[V]],relist:List[V]):List[V]={
       if(s.nonEmpty) {
         val ind=aide_top(s,arc)
         val res=deleteArc(arc,ind)
-        val result=topological(s-ind,res)
-        return List(ind)++result
+        return topological(s-ind,res,List(ind)++relist)
       }
-      s.toList
+      relist
     }
     def aide_top(s:Set[V],arc:Set[Arc[V]]):V= {
       if (arc.nonEmpty) {
@@ -81,11 +80,11 @@ trait StrictGraph[V] {
 
     }
     }
-    def Hascycle(ves:Set[V]):Boolean={
+    def Hascycle(ves:Set[V],res:Boolean):Boolean={
       if(ves.isEmpty)
-        false
+        res
         else
-        checkcycle(ves.head,ves.head)||Hascycle(ves.tail)
+        Hascycle(ves.tail,checkcycle(ves.head,ves.head)||res)
     }
   def checkcycle(parent:V,v:V):Boolean={
 
@@ -183,10 +182,10 @@ trait StrictGraph[V] {
 
     /** A topological order of the vertex set (if exists) */
     lazy val topologicalOrder : Option[Seq[V]] = {
-      if(Hascycle(vertices))
+      if(Hascycle(vertices,false))
         None
       else
-        Some(topological(vertices,arcs).to(Seq))
+        Some(topological(vertices,arcs,List.empty[V]).to(Seq).reverse)
     }
 
     /* VALUATED GRAPH METHODS */
