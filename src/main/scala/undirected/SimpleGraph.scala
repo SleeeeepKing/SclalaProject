@@ -23,12 +23,14 @@ trait SimpleGraph[V] {
 
 
   val map = mutable.Map.empty[Edge[V], Double]
-  def getMap(arc:Seq[Edge[V]], weight:List[Double]):Map[Edge[V],Double]={
-    if(arc.nonEmpty){
-      map(arc.head)=weight.head
-      (map++getMap(arc.tail,weight.tail)).toMap}
+
+  def getMap(arc: Seq[Edge[V]], weight: List[Double]): Map[Edge[V], Double] = {
+    if (arc.nonEmpty) {
+      map(arc.head) = weight.head
+      (map ++ getMap(arc.tail, weight.tail)).toMap
+    }
     else
-      Map.empty[Edge[V],Double]
+      Map.empty[Edge[V], Double]
 
   }
 
@@ -152,12 +154,10 @@ trait SimpleGraph[V] {
       this.-|(minE)
     }
     val valuation2 = valuation - (minE)
-    vertices.foreach(x =>
-      if (neighborsOf(x) == null) {
-        minimumSpanningTree(valuation2)
-      }
-    )
-    this
+    if (!this.isConnected)
+      minimumSpanningTree(valuation2)
+    else
+      this
   }
 
   /* COLORING METHODS */
