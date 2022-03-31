@@ -9,35 +9,49 @@ trait SimpleGraph[V] {
     /* QUERY METHODS */
 
     /** The set of all vertices of the graph */
-    val vertices : Set[V]
+    val vertices : Set[V] //vertices 所有的顶点
+
+    def initvers(vertices : V):{
+        if()
+    }
 
     /** The set of all    edges of the graph */
-    val edges : Set[Edge[V]]
+    val edges : Set[Edge[V]]  //edges 所有的边
 
     /** The set of all vertices adjacent to input vertex
+      * 与输入顶点相邻的所有顶点的集合
       * @param v vertex
       * @return [[None]] if `v` is not an actual vertex, the set of all neighbors of `v` otherwise (may be empty)
       */
-    def neighborsOf(v : V) : Option[Set[V]]
+    def neighborsOf(v : V) : Option[Set[V]] //与输入顶点相邻的所有顶点的集合
 
     /** The number of adjacent vertices to input vertex
+      * 输入顶点的相邻顶点数
       * @param v vertex
       * @return [[None]] if `v` is not an actual vertex, the degree of `v` otherwise
       */
-    def degreeOf(v : V) : Option[Int] = neighborsOf(v) map { _.size }
+    def degreeOf(v : V) : Option[Int] = neighborsOf(v) map { _.size } //输入顶点的相邻顶点数
 
     /** Checks if there exists a path between two vertices
       * @param v1 one end of path to search
       * @param v2 other end of path to search
       * @return `true` if `v1` and `v2` are equal or if a path exists between `v1` and `v2`, `false` otherwise
       */
-    def hasPath(v1 : V, v2 : V) : Boolean = ???
+
+    def hasPath(v1 : V, v2 : V) : Boolean ={
+
+        return true
+    }
 
     /** Checks if graph is connected */
-    lazy val isConnected : Boolean = ???
+    lazy val isConnected : Boolean = {
+      ???
+    }
 
     /** Checks if graph is acyclic */
-    lazy val isAcyclic : Boolean = ???
+    lazy val isAcyclic : Boolean = {
+        ???
+    }
 
     /** Checks if graph is a tree */
     lazy val isTree : Boolean = isConnected && isAcyclic
@@ -96,18 +110,27 @@ trait SimpleGraph[V] {
       * @param valuation valuation used
       * @return a spanning tree whose value is minimal
       */
-    def minimumSpanningTree(valuation : Map[Edge[V], Double]) : SimpleGraph[V] = ???
+    def minimumSpanningTree(valuation : Map[Edge[V],  Double]) : SimpleGraph[V] = {
+        vertices.size;
+
+    }
 
     /* COLORING METHODS */
 
     /** Sequence of vertices sorted by decreasing degree */
-    lazy val sortedVertices : Seq[V] = ???
+    lazy val sortedVertices : Seq[V] = {
+        ???
+    }
 
     /** Proper coloring using greedy algorithm (a.k.a WELSH-POWELL) */
-    lazy val greedyColoring : Map[V, Int] = ???
+    lazy val greedyColoring : Map[V, Int] = {
+        ???
+    }
 
     /** Proper coloring using DSATUR algorithm */
-    lazy val coloringDSATUR : Map[V, Int] = ???
+    lazy val coloringDSATUR : Map[V, Int] = {
+        ???
+    }
 
     /* toString-LIKE METHODS */
 

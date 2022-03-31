@@ -12,7 +12,7 @@ case class Edge[V](_1 : V, _2 : V) {
       * @param v one end
       * @return [[None]] if `v` is not an actual end, the other end otherwise
       */
-    def adjacentTo(v : V) : Option[V] =
+    def adjacentTo(v : V) : Option[V] =   //获取边的另一端顶点
       if (v == _1) Some(_2) else if (v == _2) Some(_1) else None
 
     /** Edge representation in DOT language */

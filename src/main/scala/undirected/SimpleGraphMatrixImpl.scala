@@ -8,7 +8,9 @@ package undirected
 case class SimpleGraphMatrixImpl[V](vs : Seq[V], adjacency : IndexedSeq[IndexedSeq[Int]]) extends SimpleGraph[V] {
 
     /** @inheritdoc */
-    lazy val vertices : Set[V] = ???
+    lazy val vertices : Set[V] = {
+        ???
+    }
 
     /** @inheritdoc */
     lazy val edges : Set[Edge[V]] = ???
