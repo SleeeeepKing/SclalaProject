@@ -89,12 +89,7 @@ trait StrictGraph[V] {
   def checkcycle(parent:V,v:V):Boolean={
 
       if(arcs.exists(y=>y._1==v)){
-        val s=arcs.filter(y=>y._1==v)
-        val u=s.map(x=>(parent==x._2) ||checkcycle(parent,x._2))
-        if(u.exists(w=>w==true))
-          true
-        else
-          false
+        arcs.filter(y=>y._1==v).map(x=>(parent==x._2) ||checkcycle(parent,x._2)).exists(w=>w==true)
       }
       else
       false
@@ -128,7 +123,7 @@ trait StrictGraph[V] {
         else
             None
     }
-    def getMap(arc:Set[Arc[V]],weight:List[Double]):Map[Arc[V],Double]={
+    def getMap(arc:Seq[Arc[V]],weight:List[Double]):Map[Arc[V],Double]={
       if(arc.nonEmpty){
       map(arc.head)=weight.head
         (map++getMap(arc.tail,weight.tail)).toMap}
