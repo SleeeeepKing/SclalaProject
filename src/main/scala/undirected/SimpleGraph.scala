@@ -82,9 +82,7 @@ trait SimpleGraph[V] {
 
 
   /** Checks if graph is acyclic */
-  lazy val isAcyclic: Boolean = if (edges.size == 1) {
-    true
-      } else !vertices.map(v1 => hasPath(v1, v1)).contains(true)
+  lazy val isAcyclic: Boolean = this.Hascycle(this)
 
 
   /** Checks if graph is a tree */
@@ -155,15 +153,49 @@ trait SimpleGraph[V] {
    * @return a spanning tree whose value is minimal
    */
 
+  def Hascycle(g: SimpleGraph[V]): Boolean = {
+
+    if (g.edges.isEmpty)
+      true
+    else {
+      val e1 = g.edges
+      val e2 = g.edges.drop(1)
+      checkcycle(e1.head, e2)
+    }
+  }
+
+  def checkcycle(e1: Edge[V], e2: Set[Edge[V]]): Boolean = {
+
+    if (e2 != Set()) {
+      e2.foreach(x =>
+        if (x._1 == e1._1) {
+//          println("进入foreach的if")
+          val res1 = e2.find(_ == Edge(e1._2, x._2))
+          val res2 = e2.find(_ == Edge(x._2, e1._2))
+          if (res1 != None || res2 != None){
+//            println("hasCycle")
+            return false
+          }
+        }
+      )
+      //noCycle
+//      println(e2)
+      val ee1 = e2.head
+      val ee2 = e2.drop(1)
+      checkcycle(ee1,ee2)
+    }
+    else
+      true
+  }
 
   def mstAide(g: SimpleGraph[V], valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
     val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
     val g2 = g.+|(minE)
     val valuation2 = valuation - (minE)
-    println(g2)
+//    println(g2)
     if (!g2.isAcyclic) {
       val g3 = g2.-|(minE)
-      println("成环,删除 " + minE)
+//      println("成环,删除 " + minE)
       if (!g3.isConnected)
         mstAide(g3, valuation2)
       else
@@ -171,8 +203,10 @@ trait SimpleGraph[V] {
     } else {
       if (!g2.isConnected)
         mstAide(g2, valuation2)
-      else
+      else {
+//        println("成功")
         g2
+      }
     }
   }
 
@@ -182,14 +216,24 @@ trait SimpleGraph[V] {
   }
 
   /* COLORING METHODS */
+  /*  def addSeq(seq: Seq[V], demo: Seq[V]): Seq[V] = {
+      val maxV = demo.max( _: Ordering[V])
+      seq :+(maxV)
+    }*/
+
   def calVexDegree(g: SimpleGraph[V]): Seq[V] = {
-    //    val v1 = g.vertices
-    ???
+    /*    val demo = Seq(6,2,4,67,8,1)
+        val seq = Seq()
+        val maxV = g.vertices.max
+        println(maxV)*/
+    //    g.vertices.toMap
+    null
+    //    addSeq(seq,maxV)
 
 
   }
 
-  /** Sequence of vertices sorted by decreasing degree */
+  /** Sequence of vertices sorted by decreasing degree 按度降序排列顶点 */
   lazy val sortedVertices: Seq[V] = {
     //    val s1 = Seq[this.vertices]
     ???
