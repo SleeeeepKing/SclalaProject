@@ -61,18 +61,31 @@ trait SimpleGraph[V] {
    */
 
   def hasPath(v1: V, v2: V): Boolean = {
-    ???
+    if (degreeOf(v1).get == 0 || degreeOf(v2).get == 0) return false;
+    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true; //condition d'arret true
+    return (neighborsOf(v1).get.map(v => hasPathAux(v, v2, Set(v1))).contains(true))
+    //return false;
+  }
+
+  def hasPathAux(v1: V, v2: V, v3: Set[V]): Boolean = {
+    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true;
+    val s = neighborsOf(v1).get.--(v3)
+    if (s.nonEmpty) {
+      return s.map(x => hasPathAux(x, v2, v3.+(v1))).contains(true)
+    }
+
+    return false;
   }
 
   /** Checks if graph is connected */
-  lazy val isConnected: Boolean = {
-    ???
-  }
+  lazy val isConnected: Boolean = !vertices.map(v1 => vertices.-(v1).map(v2 => hasPath(v1, v2))).flatten.contains(false);
+
 
   /** Checks if graph is acyclic */
-  lazy val isAcyclic: Boolean = {
-    ???
-  }
+  lazy val isAcyclic: Boolean = if (edges.size == 1) {
+    true
+  } else !vertices.map(v1 => hasPath(v1, v1)).contains(true)
+
 
   /** Checks if graph is a tree */
   lazy val isTree: Boolean = isConnected && isAcyclic
@@ -127,11 +140,6 @@ trait SimpleGraph[V] {
 
   /* VALUATED GRAPH METHODS */
 
-
-  def initvers(v: V): Set[V] = {
-    ???
-  }
-
   /** Total value of the graph
    *
    * @param valuation valuation used
@@ -146,24 +154,55 @@ trait SimpleGraph[V] {
    * @param valuation valuation used
    * @return a spanning tree whose value is minimal
    */
-  def minimumSpanningTree(valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
-    this.withoutEdge
-    val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
-    this.+|(minE)
-    if (this.isAcyclic) {
-      this.-|(minE)
+  def IfKillEdge(valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
+    if (this.edges == valuation.keys){
+      println("Before kill: "+this.edges)
+      println("kill+++++")
+      this.withoutEdge //TODO: Need it to run only once
+
+    } else {
+      println("Before kill: "+this.edges)
+      println("dont Kill-------")
+      this
+
     }
+  }
+
+  def minimumSpanningTree(valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
+    //    this.withoutEdge
+    /*    println("First :  "+valuation)
+        if(valuation.isEmpty){
+          println("is Null : "+valuation)
+          return this
+        }*/
+
+    //    val g = this
+    val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
+    val g = this.IfKillEdge(valuation)
+    println("After kill: "+g)
     val valuation2 = valuation - (minE)
-    if (!this.isConnected)
+    val g2 = g.+|(minE)
+    if (!g.isAcyclic) {
+      g.-|(minE)
+    }
+
+    if (!g2.isConnected)
       minimumSpanningTree(valuation2)
     else
-      this
+      g2
   }
 
   /* COLORING METHODS */
+  def calVexDegree(g: SimpleGraph[V]): Seq[V] = {
+    //    val v1 = g.vertices
+    ???
+
+
+  }
 
   /** Sequence of vertices sorted by decreasing degree */
   lazy val sortedVertices: Seq[V] = {
+    //    val s1 = Seq[this.vertices]
     ???
   }
 

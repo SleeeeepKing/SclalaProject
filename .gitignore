@@ -1,3 +1,6 @@
 # Project exclude paths
 /project/target/
 /target/
+
+src/main/scala/undirected/Test2.*
+src/main/scala/undirected/Test3.*
