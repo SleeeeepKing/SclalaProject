@@ -84,8 +84,8 @@ trait SimpleGraph[V] {
   /** Checks if graph is acyclic */
   lazy val isAcyclic: Boolean = if (edges.size == 1) {
     true
-  } else !vertices.map(v1 => hasPath(v1, v1)).contains(true)
-  //  }
+      } else !vertices.map(v1 => hasPath(v1, v1)).contains(true)
+
 
   /** Checks if graph is a tree */
   lazy val isTree: Boolean = isConnected && isAcyclic
@@ -162,12 +162,18 @@ trait SimpleGraph[V] {
     val valuation2 = valuation - (minE)
     println(g2)
     if (!g2.isAcyclic) {
-      mstAide(g2.-|(minE), valuation2)
+      val g3 = g2.-|(minE)
+      println("成环,删除 " + minE)
+      if (!g3.isConnected)
+        mstAide(g3, valuation2)
+      else
+        g3
+    } else {
+      if (!g2.isConnected)
+        mstAide(g2, valuation2)
+      else
+        g2
     }
-    if (!g2.isConnected)
-      mstAide(g2, valuation2)
-    else
-      g2
   }
 
   def minimumSpanningTree(valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
