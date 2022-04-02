@@ -1,7 +1,9 @@
 package undirected
 
 import jdk.nashorn.internal.objects.NativeDebug.map
+import jdk.nashorn.internal.runtime.ScriptObject.{GETPROTO, NO_SUCH_METHOD_NAME, getCount}
 
+import scala.:+
 import scala.collection.immutable.Nil.++
 import scala.math.Numeric.DoubleIsFractional
 import scala.collection.mutable
@@ -62,9 +64,9 @@ trait SimpleGraph[V] {
 
   def hasPath(v1: V, v2: V): Boolean = {
     if (degreeOf(v1).get == 0 || degreeOf(v2).get == 0) return false;
-    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true; //condition d'arret true
+    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true;
     return (neighborsOf(v1).get.map(v => hasPathAux(v, v2, Set(v1))).contains(true))
-    //return false;
+    //false;
   }
 
   def hasPathAux(v1: V, v2: V, v3: Set[V]): Boolean = {
@@ -76,6 +78,21 @@ trait SimpleGraph[V] {
 
     return false;
   }
+
+  /*  def hasPathAide(v1:V,v2:V,edge: Set[Edge[V]]): Boolean = {
+      val nv1 = neighborsOf(v1)
+      if (nv1 == v2) {
+        return true
+      }else{
+        edge.find(_._2 == nv1)
+      }
+      false
+    }
+
+    def hasPathAide2(v: V, edge: Set[Edge[V]]): Boolean = {
+      false
+    }*/
+
 
   /** Checks if graph is connected */
   lazy val isConnected: Boolean = !vertices.map(v1 => vertices.-(v1).map(v2 => hasPath(v1, v2))).flatten.contains(false);
@@ -169,20 +186,20 @@ trait SimpleGraph[V] {
     if (e2 != Set()) {
       e2.foreach(x =>
         if (x._1 == e1._1) {
-//          println("进入foreach的if")
+          //          println("进入foreach的if")
           val res1 = e2.find(_ == Edge(e1._2, x._2))
           val res2 = e2.find(_ == Edge(x._2, e1._2))
-          if (res1 != None || res2 != None){
-//            println("hasCycle")
+          if (res1 != None || res2 != None) {
+            //            println("hasCycle")
             return false
           }
         }
       )
       //noCycle
-//      println(e2)
+      //      println(e2)
       val ee1 = e2.head
       val ee2 = e2.drop(1)
-      checkcycle(ee1,ee2)
+      checkcycle(ee1, ee2)
     }
     else
       true
@@ -192,10 +209,10 @@ trait SimpleGraph[V] {
     val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
     val g2 = g.+|(minE)
     val valuation2 = valuation - (minE)
-//    println(g2)
+    //    println(g2)
     if (!g2.isAcyclic) {
       val g3 = g2.-|(minE)
-//      println("成环,删除 " + minE)
+      //      println("成环,删除 " + minE)
       if (!g3.isConnected)
         mstAide(g3, valuation2)
       else
@@ -204,7 +221,7 @@ trait SimpleGraph[V] {
       if (!g2.isConnected)
         mstAide(g2, valuation2)
       else {
-//        println("成功")
+        //        println("成功")
         g2
       }
     }
@@ -216,27 +233,67 @@ trait SimpleGraph[V] {
   }
 
   /* COLORING METHODS */
-  /*  def addSeq(seq: Seq[V], demo: Seq[V]): Seq[V] = {
-      val maxV = demo.max( _: Ordering[V])
-      seq :+(maxV)
+  /*
+    def addDegree(d1: Map[V, Int], d2: Map[V, Int]): Map[V, Int] = {
+      val newD = d1 ++ d2
+      newD
+    }
+  */
+
+
+  /*  def deleteV(g: SimpleGraph[V], v1: V, v: Set[V]): SimpleGraph[V] = {
+      val G = g.-(v1)
+      val V = v.-(v1)
+      if (V != Set()) {
+
+        val V1 = V.head
+        //      println(G)
+        deleteV(G, V1, V)
+      } else
+        G
+    }
+
+    def withoutVertices: SimpleGraph[V] = {
+
+      val g1 = deleteV(this, this.vertices.head, this.vertices)
+      g1.edges.foreach(x =>
+        g1.+|(x)
+      )
+      null
     }*/
+  def calVexDegree(g: SimpleGraph[V]): mutable.Map[V, Int] = {
+    val degree = scala.collection.mutable.Map[V, Int]()
+    g.vertices.foreach(x => {
+      //      println(x+" 的度是： "+neighborsOf(x).get.size)
+      degree += ((x, neighborsOf(x).get.size))
 
-  def calVexDegree(g: SimpleGraph[V]): Seq[V] = {
-    /*    val demo = Seq(6,2,4,67,8,1)
-        val seq = Seq()
-        val maxV = g.vertices.max
-        println(maxV)*/
-    //    g.vertices.toMap
-    null
-    //    addSeq(seq,maxV)
+    }
+    )
+    degree
 
+  }
 
+  def addV(V: Seq[V], v1: V, v: Seq[(V, Int)]): Seq[V] = {
+    val V2 = V :+ v1
+    val v2 = v.drop(1)
+    if (v2 != List()) {
+      //      println(v2)
+      val v12 = v2.head._1
+      addV(V2, v12, v2)
+    } else
+      V2
   }
 
   /** Sequence of vertices sorted by decreasing degree 按度降序排列顶点 */
   lazy val sortedVertices: Seq[V] = {
-    //    val s1 = Seq[this.vertices]
-    ???
+    //        val s1 = Seq[this.vertices]
+
+    val V = calVexDegree(this).toSeq.sortWith(_._2 > _._2)
+    val v1 = V.head._1
+    val v = Seq[V]()
+    //    println(V)
+    addV(v, v1, V)
+
   }
 
   /** Proper coloring using greedy algorithm (a.k.a WELSH-POWELL) */
