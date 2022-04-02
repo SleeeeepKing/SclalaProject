@@ -85,7 +85,7 @@ trait SimpleGraph[V] {
   lazy val isAcyclic: Boolean = if (edges.size == 1) {
     true
   } else !vertices.map(v1 => hasPath(v1, v1)).contains(true)
-
+  //  }
 
   /** Checks if graph is a tree */
   lazy val isTree: Boolean = isConnected && isAcyclic
@@ -154,42 +154,25 @@ trait SimpleGraph[V] {
    * @param valuation valuation used
    * @return a spanning tree whose value is minimal
    */
-  def IfKillEdge(valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
-    if (this.edges == valuation.keys){
-      println("Before kill: "+this.edges)
-      println("kill+++++")
-      this.withoutEdge //TODO: Need it to run only once
 
-    } else {
-      println("Before kill: "+this.edges)
-      println("dont Kill-------")
-      this
 
+  def mstAide(g: SimpleGraph[V], valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
+    val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
+    val g2 = g.+|(minE)
+    val valuation2 = valuation - (minE)
+    println(g2)
+    if (!g2.isAcyclic) {
+      mstAide(g2.-|(minE), valuation2)
     }
+    if (!g2.isConnected)
+      mstAide(g2, valuation2)
+    else
+      g2
   }
 
   def minimumSpanningTree(valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
-    //    this.withoutEdge
-    /*    println("First :  "+valuation)
-        if(valuation.isEmpty){
-          println("is Null : "+valuation)
-          return this
-        }*/
-
-    //    val g = this
-    val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
-    val g = this.IfKillEdge(valuation)
-    println("After kill: "+g)
-    val valuation2 = valuation - (minE)
-    val g2 = g.+|(minE)
-    if (!g.isAcyclic) {
-      g.-|(minE)
-    }
-
-    if (!g2.isConnected)
-      minimumSpanningTree(valuation2)
-    else
-      g2
+    val g = this.withoutEdge
+    mstAide(g, valuation)
   }
 
   /* COLORING METHODS */
