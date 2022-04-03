@@ -98,7 +98,7 @@ trait SimpleGraph[V] {
 
 
   /** Checks if graph is acyclic */
-  lazy val isAcyclic: Boolean = this.Hascycle(this)
+  lazy val isAcyclic: Boolean = this.NoCycle(this)
 
 
   /** Checks if graph is a tree */
@@ -169,7 +169,7 @@ trait SimpleGraph[V] {
    * @return a spanning tree whose value is minimal
    */
 
-  def Hascycle(g: SimpleGraph[V]): Boolean = {
+  def NoCycle(g: SimpleGraph[V]): Boolean = {
 
     if (g.edges.isEmpty)
       true

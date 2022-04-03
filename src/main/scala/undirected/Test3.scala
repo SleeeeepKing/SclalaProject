@@ -2,34 +2,36 @@ package undirected
 
 object Test3 {
   val vertices: Set[Int] = Set(1, 2, 3, 4, 5, 6, 7)
-  val vertices2: Set[Int] = Set(1)
   val edges: Set[Edge[Int]] = Set(Edge(1, 4), Edge(1, 2), Edge(2, 4), Edge(2, 3), Edge(2, 5), Edge(4, 6), Edge(6, 7), Edge(5, 7),Edge(3,5),Edge(4,5))
-  val edges2: Set[Edge[Int]] = Set(Edge(1, 4), Edge(1, 2), Edge(2, 5), Edge(2, 3))
-  val edges3: Set[Edge[Int]] = Set()
   val g = new SimpleGraphDefaultImpl[Int](vertices, edges)
-  val g2 = new SimpleGraphDefaultImpl[Int](vertices, edges2)
   val weight = g.getMap(g.edges.toList.sortBy(x => x._1), List(7,5,7,8,9,5,15,6,9,11))
   //1-2,1-4,2-5,2-3,2-4,3-5,4-5,4-6,5-7,5-6,6-7
-  def main(args: Array[String]) {
 
-/*    /** hasPath */
+  val vertices2: Set[Int] = Set(1)
+  val edges2: Set[Edge[Int]] = Set(Edge(1, 4), Edge(1, 2), Edge(2, 5), Edge(2, 3))
+  val edges3: Set[Edge[Int]] = Set()
+
+  val g2 = new SimpleGraphDefaultImpl[Int](vertices, edges2)
+
+  def main(args: Array[String]) {
+/*
+    /** hasPath */
     println("*****Fonction hasPath*****")
-    println(g.hasPath(1,4))
+    println(g.hasPath(1,4))*/
 
     /** isAcyclic */
     println("*****Fonction isAcyclic*****")
     println(g.isAcyclic)
-    */
+
     /** mst */
     println("*****Fonction mst*****")
-    println("Before:  "+weight)
-//    println(weight)
-    println("After :  "+g.minimumSpanningTree(weight))
+    println("Input Edges:  "+weight)
+    println("Output :  "+g.minimumSpanningTree(weight))
 
-/*    /** color sorted */
+    /** color sorted */
     println("*****Fonction sortedVertices*****")
-    println("Before:  "+g.vertices)
-    println("After :  "+g.sortedVertices)*/
+    println("Input:  "+g.vertices)
+    println("Output :  "+g.sortedVertices)
 
 
     //    println(g.isAcyclic)
