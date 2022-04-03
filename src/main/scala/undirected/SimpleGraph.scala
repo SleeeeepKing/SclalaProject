@@ -62,18 +62,20 @@ trait SimpleGraph[V] {
    * @return `true` if `v1` and `v2` are equal or if a path exists between `v1` and `v2`, `false` otherwise
    */
 
-  def hasPath(v1 : V, v2 : V) : Boolean = {
-    if(degreeOf(v1).get== 0 || degreeOf(v2).get == 0) return false;
-    if(v1==v2 || neighborsOf(v1).get.contains(v2)) return true;
-    return (neighborsOf(v1).get.map(v=>hasPathAide(v,v2,Set(v1))).contains(true))
+  def hasPath(v1: V, v2: V): Boolean = {
+    if (degreeOf(v1).get == 0 || degreeOf(v2).get == 0) return false;
+    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true;
+    return (neighborsOf(v1).get.map(v => hasPathAide(v, v2, Set(v1))).contains(true))
     //false;
   }
 
 
-  def hasPathAide(v1 : V, v2 : V,v3:Set[V]) : Boolean ={
-    if(v1==v2 || neighborsOf(v1).get.contains(v2)) return true;
-    val s=neighborsOf(v1).get.--(v3)
-    if(s.nonEmpty){return s.map(x =>hasPathAide(x,v2,v3.+(v1))).contains(true)}
+  def hasPathAide(v1: V, v2: V, v3: Set[V]): Boolean = {
+    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true;
+    val s = neighborsOf(v1).get.--(v3)
+    if (s.nonEmpty) {
+      return s.map(x => hasPathAide(x, v2, v3.+(v1))).contains(true)
+    }
     return false;
   }
 
@@ -192,8 +194,8 @@ trait SimpleGraph[V] {
             //            println("hasCycle")
             return false
           }
-        }
-      )
+      //        }
+
       //noCycle
       //      println(e2)
       val ee1 = e2.head
@@ -204,23 +206,28 @@ trait SimpleGraph[V] {
       true
   }
 
+  def hasCycle(e1: Edge[V], e2: Set[Edge[V]], g: SimpleGraph[V]): Boolean = {
+    val res1 = e2.find(_._1 == e1._1)
+    val res2 = e2.find(_._2 == e1._1)
+    val res3 = e2.find(_._1 == e1._2)
+    val res4 = e2.find(_._2 == e1._2)
+    if ((res1 != None || res2 != None) && (res3 != None || res4 != None) && (g.hasPath(e1._1, e1._2) == true)) {
+       true
+    } else
+       false
+  }
+
   def mstAide(g: SimpleGraph[V], valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
     val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
-    val g2 = g.+|(minE)
     val valuation2 = valuation - (minE)
-//        println(g2)
-    if (!g2.isAcyclic) {
-      val g3 = g2.-|(minE)
-//            println("成环,删除 " + minE)
-      if (!g3.isConnected)
-        mstAide(g3, valuation2)
-      else
-        g3
+    if (hasCycle(minE, g.edges, g)) {
+      mstAide(g, valuation2)
     } else {
+      val g2 = g.+|(minE)
+      println(g2)
       if (!g2.isConnected)
         mstAide(g2, valuation2)
       else {
-        //        println("成功")
         g2
       }
     }
@@ -264,7 +271,7 @@ trait SimpleGraph[V] {
     val degree = scala.collection.mutable.Map[V, Int]()
     g.vertices.foreach(x => {
       //      println(x+" 的度是： "+neighborsOf(x).get.size)
-//      degree += ((x, neighborsOf(x).get.size))
+      //      degree += ((x, neighborsOf(x).get.size))
       degree += ((x, degreeOf(x).get))
 
     }
