@@ -62,23 +62,35 @@ trait SimpleGraph[V] {
    * @return `true` if `v1` and `v2` are equal or if a path exists between `v1` and `v2`, `false` otherwise
    */
 
-  def hasPath(v1: V, v2: V): Boolean = {
-    if (degreeOf(v1).get == 0 || degreeOf(v2).get == 0) return false;
-    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true;
-    return (neighborsOf(v1).get.map(v => hasPathAide(v, v2, Set(v1))).contains(true))
-    //false;
-  }
+  def DFS(start: V):List[V]={
+    //@tailrec
+    def DFS0(start:V, visited : List[V]):List[V]={
+      if (visited.contains(start)) {
+        visited
+      } else {
+        val voisin:List[V] = neighborsOf(start).get.toList.filterNot(visited.contains)
+        voisin.foldLeft(start::visited)((b,a)=>DFS0(a,b))
+      }
 
-
-  def hasPathAide(v1: V, v2: V, v3: Set[V]): Boolean = {
-    if (v1 == v2 || neighborsOf(v1).get.contains(v2)) return true;
-    val s = neighborsOf(v1).get.--(v3)
-    if (s.nonEmpty) {
-      return s.map(x => hasPathAide(x, v2, v3.+(v1))).contains(true)
     }
-    return false;
+    DFS0(start, List()).reverse
   }
 
+  def hasPath(v1 : V, v2 : V) : Boolean = {
+    if (DFS(v1).contains(v2))
+      true
+    else
+      false
+  }
+
+  /** Checks if graph is connected */
+  lazy val isConnected : Boolean = {
+    val x = vertices.map(x=>x)
+    if (vertices.size == DFS(x.head).length)
+      true
+    else
+      false
+  }
 
   /*  def hasPathAide(v1:V,v2:V,edge: Set[Edge[V]]): Boolean = {
       val nv1 = neighborsOf(v1)
@@ -95,8 +107,7 @@ trait SimpleGraph[V] {
     }*/
 
 
-  /** Checks if graph is connected */
-  lazy val isConnected: Boolean = !vertices.map(v1 => vertices.-(v1).map(v2 => hasPath(v1, v2))).flatten.contains(false);
+
 
 
   /** Checks if graph is acyclic */
