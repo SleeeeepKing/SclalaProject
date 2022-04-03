@@ -194,8 +194,8 @@ trait SimpleGraph[V] {
             //            println("hasCycle")
             return false
           }
-      //        }
-
+        }
+      )
       //noCycle
       //      println(e2)
       val ee1 = e2.head
@@ -212,9 +212,9 @@ trait SimpleGraph[V] {
     val res3 = e2.find(_._1 == e1._2)
     val res4 = e2.find(_._2 == e1._2)
     if ((res1 != None || res2 != None) && (res3 != None || res4 != None) && (g.hasPath(e1._1, e1._2) == true)) {
-       true
+      true
     } else
-       false
+      false
   }
 
   def mstAide(g: SimpleGraph[V], valuation: Map[Edge[V], Double]): SimpleGraph[V] = {
@@ -224,7 +224,7 @@ trait SimpleGraph[V] {
       mstAide(g, valuation2)
     } else {
       val g2 = g.+|(minE)
-      println(g2)
+//      println(g2)
       if (!g2.isConnected)
         mstAide(g2, valuation2)
       else {
