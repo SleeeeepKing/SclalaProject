@@ -1,5 +1,6 @@
 package directed
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.reflect.{ClassManifest, ClassTag}
@@ -47,55 +48,47 @@ trait StrictGraph[V] {
             }
 
         }
-    def deleteArc(arc:Set[Arc[V]],v:V): Set[Arc[V]]={
 
-      if(arc.isEmpty)
-        arc
+    def topological(s:Set[V],arc:Set[Arc[V]],relist:List[V]):List[V]={
+      @tailrec    def aide_top(s:Set[V],arc:Set[Arc[V]]):V= {
+        if (arc.nonEmpty) {
+          if (inDegreeOf(s.head, s, arc).toList.head == 0 || s.tail.isEmpty) {
+            s.head
+          } else
+            aide_top(s.tail, arc)
+        }
         else {
-        if (arc.head._1 == v)
-          deleteArc(arc.tail, v)
-        else
-          Set(arc.head)++deleteArc(arc.tail, v)
+          s.head
+        }
       }
-    }
-    def topological(s:Set[V],arc:Set[Arc[V]]):List[V]={
+      @tailrec def deleteArc(arc:Set[Arc[V]],v:V,res:Set[Arc[V]]): Set[Arc[V]]={
+        if(arc.isEmpty)
+          res
+        else {
+          if (arc.head._1 == v)
+            deleteArc(arc.tail, v,res)
+          else
+            deleteArc(arc.tail,v, res++Set(arc.head))
+        }
+      }
       if(s.nonEmpty) {
         val ind=aide_top(s,arc)
-        val res=deleteArc(arc,ind)
-        val result=topological(s-ind,res)
-        return List(ind)++result
+        val res=deleteArc(arc,ind,Set.empty[Arc[V]])
+        return topological(s-ind,res,List(ind)++relist)
       }
-      s.toList
+      relist
     }
-    def aide_top(s:Set[V],arc:Set[Arc[V]]):V= {
-      if (arc.nonEmpty) {
-        if (inDegreeOf(s.head, s, arc).toList.head == 0 || s.tail.isEmpty) {
 
-          s.head
-        } else
-          aide_top(s.tail, arc)
-      }
-      else {
-
-        s.head
-
-    }
-    }
-    def Hascycle(ves:Set[V]):Boolean={
+    def Hascycle(ves:Set[V],res:Boolean):Boolean={
       if(ves.isEmpty)
-        false
+        res
         else
-        checkcycle(ves.head,ves.head)||Hascycle(ves.tail)
+        Hascycle(ves.tail,checkcycle(ves.head,ves.head)||res)
     }
   def checkcycle(parent:V,v:V):Boolean={
 
       if(arcs.exists(y=>y._1==v)){
-        val s=arcs.filter(y=>y._1==v)
-        val u=s.map(x=>(parent==x._2) ||checkcycle(parent,x._2))
-        if(u.exists(w=>w==true))
-          true
-        else
-          false
+        arcs.filter(y=>y._1==v).map(x=>(parent==x._2) ||checkcycle(parent,x._2)).exists(w=>w==true)
       }
       else
       false
@@ -129,7 +122,7 @@ trait StrictGraph[V] {
         else
             None
     }
-    def getMap(arc:Set[Arc[V]],weight:List[Double]):Map[Arc[V],Double]={
+    def getMap(arc:Seq[Arc[V]],weight:List[Double]):Map[Arc[V],Double]={
       if(arc.nonEmpty){
       map(arc.head)=weight.head
         (map++getMap(arc.tail,weight.tail)).toMap}
@@ -183,10 +176,10 @@ trait StrictGraph[V] {
 
     /** A topological order of the vertex set (if exists) */
     lazy val topologicalOrder : Option[Seq[V]] = {
-      if(Hascycle(vertices))
+      if(Hascycle(vertices,false))
         None
       else
-        Some(topological(vertices,arcs).to(Seq))
+        Some(topological(vertices,arcs,List.empty[V]).to(Seq).reverse)
     }
 
     /* VALUATED GRAPH METHODS */
@@ -200,7 +193,22 @@ trait StrictGraph[V] {
     def shortestPath(valuation : Map[Arc[V], Double])(start : V, end : V) : Option[(Seq[V], Double)] ={
       val edgeTo = mutable.ArrayBuffer.fill(vertices.size)(-1)
       val disTo=mutable.ArrayBuffer.fill(vertices.size)(Double.PositiveInfinity)
-
+      @tailrec def aideQueue(queue: mutable.PriorityQueue[(V,Double)],valuation:Map[Arc[V], Double],edgeTo:mutable.ArrayBuffer[Int],disTo:mutable.ArrayBuffer[Double]):Option[(mutable.PriorityQueue[(V,Double)],mutable.ArrayBuffer[Double],mutable.ArrayBuffer[Int])]={
+        if(queue.nonEmpty){
+          val (minDestV, _) = queue.dequeue()
+          val s=arcs.filter(y=>y._1==minDestV)
+          s.foreach{e=>
+            if(disTo(VtoPos(e._2))>disTo(VtoPos(e._1))+valuation(e)) {
+              disTo(VtoPos(e._2))=disTo(VtoPos(e._1))+valuation(e)
+              edgeTo(VtoPos(e._2))=VtoPos(e._1)
+              if (!queue.exists(_._1 == e._2)) queue.enqueue((e._2, disTo(VtoPos(e._2))))
+            }
+          }
+          aideQueue(queue, valuation, edgeTo,disTo)
+        }
+        else
+          None
+      }
       disTo(VtoPos(start))=0.0
       edgeTo(VtoPos(start))=(-1)
       val sourceDist=(start,disTo(VtoPos(start)))
@@ -210,9 +218,7 @@ trait StrictGraph[V] {
         case Some(x)=>(x._2,x._3)
         case None=>(disTo,edgeTo)
       }
-
       if(res._1(VtoPos(end))!=Double.PositiveInfinity) {
-
         val path=getPath(res._2,end).reverse
         Some((path,res._1(VtoPos(end))))
       } else
@@ -226,22 +232,6 @@ trait StrictGraph[V] {
       Seq(end)++getPath(gPath,next)}
     else
       Seq(end)
-  }
-  def aideQueue(queue: mutable.PriorityQueue[(V,Double)],valuation:Map[Arc[V], Double],edgeTo:mutable.ArrayBuffer[Int],disTo:mutable.ArrayBuffer[Double]):Option[(mutable.PriorityQueue[(V,Double)],mutable.ArrayBuffer[Double],mutable.ArrayBuffer[Int])]={
-     if(queue.nonEmpty){
-      val (minDestV, _) = queue.dequeue()
-      val s=arcs.filter(y=>y._1==minDestV)
-      s.foreach{e=>
-        if(disTo(VtoPos(e._2))>disTo(VtoPos(e._1))+valuation(e)) {
-          disTo(VtoPos(e._2))=disTo(VtoPos(e._1))+valuation(e)
-          edgeTo(VtoPos(e._2))=VtoPos(e._1)
-          if (!queue.exists(_._1 == e._2)) queue.enqueue((e._2, disTo(VtoPos(e._2))))
-        }
-        }
-       aideQueue(queue, valuation, edgeTo,disTo)
-      }
-    else
-       None
   }
 
 
