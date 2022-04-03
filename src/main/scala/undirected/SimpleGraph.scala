@@ -208,10 +208,10 @@ trait SimpleGraph[V] {
     val minE = valuation.minBy(_._2)(DoubleIsFractional)._1
     val g2 = g.+|(minE)
     val valuation2 = valuation - (minE)
-    //    println(g2)
+//        println(g2)
     if (!g2.isAcyclic) {
       val g3 = g2.-|(minE)
-      //      println("成环,删除 " + minE)
+//            println("成环,删除 " + minE)
       if (!g3.isConnected)
         mstAide(g3, valuation2)
       else
