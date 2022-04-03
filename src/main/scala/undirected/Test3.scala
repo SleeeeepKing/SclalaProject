@@ -2,7 +2,6 @@ package undirected
 
 object Test3 {
   val vertices: Set[Int] = Set(1, 2, 3, 4, 5, 6, 7)
-//  val edges: Set[Edge[Int]] = Set(Edge(1, 4), Edge(1, 2), Edge(2, 4), Edge(2, 3), Edge(2, 5), Edge(4, 6), Edge(6, 7), Edge(5, 7),Edge(3,5),Edge(4,5))
   val edges: Set[Edge[Int]] = Set(Edge(1, 4), Edge(1, 2), Edge(2, 4), Edge(2, 3), Edge(2, 5), Edge(4, 6),Edge(5,6), Edge(6, 7), Edge(5, 7),Edge(3,5),Edge(4,5))
   val g = new SimpleGraphDefaultImpl[Int](vertices, edges)
   val weight = g.getMap(g.edges.toList.sortBy(x => x._1), List(7,5,7,8,9,5,15,6,9,8,11))
