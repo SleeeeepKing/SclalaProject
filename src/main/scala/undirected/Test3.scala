@@ -8,6 +8,7 @@ object Test3 {
   val edges3: Set[Edge[Int]] = Set()
   val g = new SimpleGraphDefaultImpl[Int](vertices, edges)
   val g2 = new SimpleGraphDefaultImpl[Int](vertices, edges2)
+  val weight = g.getMap(g.edges.toList.sortBy(x => x._1), List(4, 2, 5, 6, 7, 3, 8, 9))
 
   def main(args: Array[String]) {
 
@@ -20,7 +21,7 @@ object Test3 {
     /** mst */
     println("*****Fonction mst*****")
     println("Before:  "+g)
-    println("After :  "+g.minimumSpanningTree(g.getMap(g.edges.toList.sortBy(x => x._1), List(4, 2, 5, 6, 7, 3, 8, 9))))
+    println("After :  "+g.minimumSpanningTree(weight))
     /** color sorted */
     println("*****Fonction sortedVertices*****")
     println("Before:  "+g.vertices)
