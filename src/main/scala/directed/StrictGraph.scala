@@ -48,18 +48,29 @@ trait StrictGraph[V] {
             }
 
         }
-    def deleteArc(arc:Set[Arc[V]],v:V,res:Set[Arc[V]]): Set[Arc[V]]={
 
-      if(arc.isEmpty)
-        res
-        else {
-        if (arc.head._1 == v)
-          deleteArc(arc.tail, v,res)
-        else
-          deleteArc(arc.tail,v, res++Set(arc.head))
-      }
-    }
     def topological(s:Set[V],arc:Set[Arc[V]],relist:List[V]):List[V]={
+      @tailrec    def aide_top(s:Set[V],arc:Set[Arc[V]]):V= {
+        if (arc.nonEmpty) {
+          if (inDegreeOf(s.head, s, arc).toList.head == 0 || s.tail.isEmpty) {
+            s.head
+          } else
+            aide_top(s.tail, arc)
+        }
+        else {
+          s.head
+        }
+      }
+      @tailrec def deleteArc(arc:Set[Arc[V]],v:V,res:Set[Arc[V]]): Set[Arc[V]]={
+        if(arc.isEmpty)
+          res
+        else {
+          if (arc.head._1 == v)
+            deleteArc(arc.tail, v,res)
+          else
+            deleteArc(arc.tail,v, res++Set(arc.head))
+        }
+      }
       if(s.nonEmpty) {
         val ind=aide_top(s,arc)
         val res=deleteArc(arc,ind,Set.empty[Arc[V]])
@@ -67,20 +78,7 @@ trait StrictGraph[V] {
       }
       relist
     }
-    def aide_top(s:Set[V],arc:Set[Arc[V]]):V= {
-      if (arc.nonEmpty) {
-        if (inDegreeOf(s.head, s, arc).toList.head == 0 || s.tail.isEmpty) {
 
-          s.head
-        } else
-          aide_top(s.tail, arc)
-      }
-      else {
-
-        s.head
-
-    }
-    }
     def Hascycle(ves:Set[V],res:Boolean):Boolean={
       if(ves.isEmpty)
         res
@@ -211,7 +209,6 @@ trait StrictGraph[V] {
         else
           None
       }
-
       disTo(VtoPos(start))=0.0
       edgeTo(VtoPos(start))=(-1)
       val sourceDist=(start,disTo(VtoPos(start)))
@@ -221,9 +218,7 @@ trait StrictGraph[V] {
         case Some(x)=>(x._2,x._3)
         case None=>(disTo,edgeTo)
       }
-
       if(res._1(VtoPos(end))!=Double.PositiveInfinity) {
-
         val path=getPath(res._2,end).reverse
         Some((path,res._1(VtoPos(end))))
       } else
